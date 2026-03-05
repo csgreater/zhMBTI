@@ -10,55 +10,68 @@
       </div>
       
       <div class="result-details">
-        <h4>维度分析</h4>
-        <div class="dimensions">
-          <div class="dimension-item">
-            <span class="dimension-label">外向(E) / 内向(I)</span>
-            <div class="dimension-bar">
-              <div class="bar" :style="{ width: result.scores.E / (result.scores.E + result.scores.I) * 100 + '%' }">E</div>
-              <div class="bar" :style="{ width: result.scores.I / (result.scores.E + result.scores.I) * 100 + '%' }">I</div>
-            </div>
-            <span class="dimension-result">{{ result.result.EI }}</span>
-            <div class="chart-container">
-              <canvas ref="chartEI"></canvas>
-            </div>
-          </div>
-          
-          <div class="dimension-item">
-            <span class="dimension-label">感觉(S) / 直觉(N)</span>
-            <div class="dimension-bar">
-              <div class="bar" :style="{ width: result.scores.S / (result.scores.S + result.scores.N) * 100 + '%' }">S</div>
-              <div class="bar" :style="{ width: result.scores.N / (result.scores.S + result.scores.N) * 100 + '%' }">N</div>
-            </div>
-            <span class="dimension-result">{{ result.result.SN }}</span>
-            <div class="chart-container">
-              <canvas ref="chartSN"></canvas>
-            </div>
-          </div>
-          
-          <div class="dimension-item">
-            <span class="dimension-label">思考(T) / 情感(F)</span>
-            <div class="dimension-bar">
-              <div class="bar" :style="{ width: result.scores.T / (result.scores.T + result.scores.F) * 100 + '%' }">T</div>
-              <div class="bar" :style="{ width: result.scores.F / (result.scores.T + result.scores.F) * 100 + '%' }">F</div>
-            </div>
-            <span class="dimension-result">{{ result.result.TF }}</span>
-            <div class="chart-container">
-              <canvas ref="chartTF"></canvas>
-            </div>
-          </div>
-          
-          <div class="dimension-item">
-            <span class="dimension-label">判断(J) / 感知(P)</span>
-            <div class="dimension-bar">
-              <div class="bar" :style="{ width: result.scores.J / (result.scores.J + result.scores.P) * 100 + '%' }">J</div>
-              <div class="bar" :style="{ width: result.scores.P / (result.scores.J + result.scores.P) * 100 + '%' }">P</div>
-            </div>
-            <span class="dimension-result">{{ result.result.JP }}</span>
-            <div class="chart-container">
-              <canvas ref="chartJP"></canvas>
-            </div>
-          </div>
+        <h4>职业风格</h4>
+        <div class="type-header">
+          <span class="type-code">{{ result.typeCode }}</span>
+          <span class="type-name">({{ getTypeName(result.typeCode) }})</span>
+        </div>
+        <div class="chart-container">
+          <canvas ref="mainChart"></canvas>
+        </div>
+        
+        <div class="scores-table">
+          <h4>得分详情</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>维度</th>
+                <th>得分</th>
+                <th>倾向</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>外向(E) / 内向(I)</td>
+                <td>
+                  <div class="score-bar">
+                    <div class="score-fill e-score" :style="{ width: (result.scores.E / (result.scores.E + result.scores.I)) * 100 + '%' }">{{ result.scores.E }}</div>
+                    <div class="score-fill i-score" :style="{ width: (result.scores.I / (result.scores.E + result.scores.I)) * 100 + '%' }">{{ result.scores.I }}</div>
+                  </div>
+                </td>
+                <td>{{ result.result.EI }}</td>
+              </tr>
+              <tr>
+                <td>感觉(S) / 直觉(N)</td>
+                <td>
+                  <div class="score-bar">
+                    <div class="score-fill s-score" :style="{ width: (result.scores.S / (result.scores.S + result.scores.N)) * 100 + '%' }">{{ result.scores.S }}</div>
+                    <div class="score-fill n-score" :style="{ width: (result.scores.N / (result.scores.S + result.scores.N)) * 100 + '%' }">{{ result.scores.N }}</div>
+                  </div>
+                </td>
+                <td>{{ result.result.SN }}</td>
+              </tr>
+              <tr>
+                <td>思考(T) / 情感(F)</td>
+                <td>
+                  <div class="score-bar">
+                    <div class="score-fill t-score" :style="{ width: (result.scores.T / (result.scores.T + result.scores.F)) * 100 + '%' }">{{ result.scores.T }}</div>
+                    <div class="score-fill f-score" :style="{ width: (result.scores.F / (result.scores.T + result.scores.F)) * 100 + '%' }">{{ result.scores.F }}</div>
+                  </div>
+                </td>
+                <td>{{ result.result.TF }}</td>
+              </tr>
+              <tr>
+                <td>判断(J) / 感知(P)</td>
+                <td>
+                  <div class="score-bar">
+                    <div class="score-fill j-score" :style="{ width: (result.scores.J / (result.scores.J + result.scores.P)) * 100 + '%' }">{{ result.scores.J }}</div>
+                    <div class="score-fill p-score" :style="{ width: (result.scores.P / (result.scores.J + result.scores.P)) * 100 + '%' }">{{ result.scores.P }}</div>
+                  </div>
+                </td>
+                <td>{{ result.result.JP }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
       
@@ -114,6 +127,103 @@
             <li v-for="(item, index) in aiAnalysis.personalGrowth" :key="index">{{ item }}</li>
           </ul>
         </div>
+        
+        <!-- A4格式报告和下载功能 -->
+        <div class="report-download-section">
+          <h5>A4格式报告</h5>
+          <div class="report-actions">
+            <button class="btn" @click="showA4Report = !showA4Report">
+              {{ showA4Report ? '隐藏A4报告' : '显示A4报告' }}
+            </button>
+            <button v-if="showA4Report" class="btn primary" @click="downloadAsImage">
+              下载为图片
+            </button>
+            <button v-if="showA4Report" class="btn primary" @click="downloadAsPDF">
+              下载为PDF
+            </button>
+          </div>
+          
+          <div v-if="showA4Report" class="a4-report" ref="a4Report">
+            <div class="a4-header">
+              <h2>MBTI性格分析报告</h2>
+              <div class="report-info">
+                <p>测评日期: {{ formatDate(new Date()) }}</p>
+                <p>性格类型: {{ result.typeCode }} - {{ result.description }}</p>
+              </div>
+            </div>
+            
+            <div class="a4-content">
+              <section class="a4-section">
+                <h3>一、性格类型概述</h3>
+                <p>{{ result.description }}</p>
+                <p>类型名称: {{ getTypeName(result.typeCode) }}</p>
+              </section>
+              
+              <section class="a4-section">
+                <h3>二、得分详情</h3>
+                <table class="a4-table">
+                  <tr>
+                    <th>维度</th>
+                    <th>得分</th>
+                    <th>倾向</th>
+                  </tr>
+                  <tr>
+                    <td>外向(E) / 内向(I)</td>
+                    <td>{{ result.scores.E }} / {{ result.scores.I }}</td>
+                    <td>{{ result.result.EI }}</td>
+                  </tr>
+                  <tr>
+                    <td>感觉(S) / 直觉(N)</td>
+                    <td>{{ result.scores.S }} / {{ result.scores.N }}</td>
+                    <td>{{ result.result.SN }}</td>
+                  </tr>
+                  <tr>
+                    <td>思考(T) / 情感(F)</td>
+                    <td>{{ result.scores.T }} / {{ result.scores.F }}</td>
+                    <td>{{ result.result.TF }}</td>
+                  </tr>
+                  <tr>
+                    <td>判断(J) / 感知(P)</td>
+                    <td>{{ result.scores.J }} / {{ result.scores.P }}</td>
+                    <td>{{ result.result.JP }}</td>
+                  </tr>
+                </table>
+              </section>
+              
+              <section class="a4-section">
+                <h3>三、优势分析</h3>
+                <ul class="a4-list">
+                  <li v-for="(item, index) in aiAnalysis.strengths" :key="index">{{ item }}</li>
+                </ul>
+              </section>
+              
+              <section class="a4-section">
+                <h3>四、劣势分析</h3>
+                <ul class="a4-list">
+                  <li v-for="(item, index) in aiAnalysis.weaknesses" :key="index">{{ item }}</li>
+                </ul>
+              </section>
+              
+              <section class="a4-section">
+                <h3>五、职业发展路径</h3>
+                <ul class="a4-list">
+                  <li v-for="(item, index) in aiAnalysis.careerPaths" :key="index">{{ item }}</li>
+                </ul>
+              </section>
+              
+              <section class="a4-section">
+                <h3>六、个人成长建议</h3>
+                <ul class="a4-list">
+                  <li v-for="(item, index) in aiAnalysis.personalGrowth" :key="index">{{ item }}</li>
+                </ul>
+              </section>
+            </div>
+            
+            <div class="a4-footer">
+              <p>本报告由MBTI职业性格测评系统生成</p>
+            </div>
+          </div>
+        </div>
       </div>
       
       <div class="action-buttons">
@@ -142,6 +252,8 @@ import { AssessmentRecordModel } from '../services/models';
 import { getCurrentUser } from '../services/userService';
 import { analyzeMBTI } from '../services/aiService';
 import Chart from 'chart.js/auto';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export default {
   data() {
@@ -153,6 +265,7 @@ export default {
       analyzing: false,
       streamingContent: '',
       showStreamingContent: false,
+      showA4Report: false,
       charts: {}
     };
   },
@@ -161,9 +274,43 @@ export default {
   },
   methods: {
     loadResult() {
-      // 从URL参数获取typeCode
+      // 从URL参数获取recordId或typeCode
+      const recordId = this.$route.query.recordId;
       const typeCode = this.$route.query.typeCode;
-      if (typeCode) {
+      
+      if (recordId) {
+        // 根据recordId加载特定的测评记录
+        const record = AssessmentRecordModel.findById(recordId);
+        if (record) {
+          // 使用实际的测评记录数据
+          this.result = {
+            typeCode: record.typeCode,
+            description: record.description,
+            scores: record.scores,
+            result: record.result
+          };
+          
+          // 生成职业建议
+          this.generateCareerSuggestions(record.typeCode);
+          
+          // 加载AI分析（优先使用保存的分析结果）
+          if (record.aiAnalysis) {
+            this.aiAnalysis = record.aiAnalysis;
+          } else {
+            this.generateAIAnalysis(record.typeCode);
+          }
+          
+          // 初始化图表
+          this.$nextTick(() => {
+            this.initCharts();
+          });
+        } else {
+          // 如果没有找到记录，显示错误信息
+          alert('未找到测评记录');
+          this.$router.push('/profile');
+        }
+      } else if (typeCode) {
+        // 从URL参数获取typeCode（原有逻辑）
         // 尝试从本地存储获取实际的测评记录
         const user = getCurrentUser();
         const records = AssessmentRecordModel.findByUserId(user ? user.id : 'guest');
@@ -217,114 +364,67 @@ export default {
         });
       }
     },
+    getTypeName(typeCode) {
+      const typeNames = {
+        'ISTJ': '检查员型',
+        'ISFJ': '照顾者型',
+        'INFJ': '博爱型',
+        'INTJ': '专家型',
+        'ISTP': '冒险家型',
+        'ISFP': '艺术家型',
+        'INFP': '理想主义型',
+        'INTP': '思想家型',
+        'ESTP': '企业家型',
+        'ESFP': '表演者型',
+        'ENFP': '激励者型',
+        'ENTP': '发明家型',
+        'ESTJ': '监督者型',
+        'ESFJ': '提供者型',
+        'ENFJ': '教导者型',
+        'ENTJ': '领导者型'
+      };
+      return typeNames[typeCode] || '未知性格类型';
+    },
     initCharts() {
       if (!this.result) return;
       
       // 销毁现有图表
       Object.values(this.charts).forEach(chart => chart.destroy());
       
-      // 初始化EI维度图表
-      if (this.$refs.chartEI) {
-        this.charts.ei = new Chart(this.$refs.chartEI, {
-          type: 'bar',
+      // 初始化主图表（按照图1所示的方式）
+      if (this.$refs.mainChart) {
+        const ctx = this.$refs.mainChart.getContext('2d');
+        this.charts.main = new Chart(ctx, {
+          type: 'radar',
           data: {
-            labels: ['外向(E)', '内向(I)'],
+            labels: ['内向/外向', '感觉/直觉', '思考/情感', '判断/感知'],
             datasets: [{
-              label: '分数',
-              data: [this.result.scores.E, this.result.scores.I],
-              backgroundColor: ['#333', '#666'],
-              borderColor: ['#333', '#666'],
-              borderWidth: 1
+              label: '职业风格评分',
+              data: [
+                this.result.result.EI === 'E' ? this.result.scores.E : this.result.scores.I,
+                this.result.result.SN === 'S' ? this.result.scores.S : this.result.scores.N,
+                this.result.result.TF === 'T' ? this.result.scores.T : this.result.scores.F,
+                this.result.result.JP === 'J' ? this.result.scores.J : this.result.scores.P
+              ],
+              backgroundColor: 'rgba(51, 51, 51, 0.2)',
+              borderColor: 'rgba(51, 51, 51, 1)',
+              borderWidth: 2,
+              pointBackgroundColor: 'rgba(51, 51, 51, 1)',
+              pointBorderColor: '#fff',
+              pointHoverBackgroundColor: '#fff',
+              pointHoverBorderColor: 'rgba(51, 51, 51, 1)'
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              y: {
-                beginAtZero: true,
-                max: 100
-              }
-            }
-          }
-        });
-      }
-      
-      // 初始化SN维度图表
-      if (this.$refs.chartSN) {
-        this.charts.sn = new Chart(this.$refs.chartSN, {
-          type: 'bar',
-          data: {
-            labels: ['感觉(S)', '直觉(N)'],
-            datasets: [{
-              label: '分数',
-              data: [this.result.scores.S, this.result.scores.N],
-              backgroundColor: ['#333', '#666'],
-              borderColor: ['#333', '#666'],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100
-              }
-            }
-          }
-        });
-      }
-      
-      // 初始化TF维度图表
-      if (this.$refs.chartTF) {
-        this.charts.tf = new Chart(this.$refs.chartTF, {
-          type: 'bar',
-          data: {
-            labels: ['思考(T)', '情感(F)'],
-            datasets: [{
-              label: '分数',
-              data: [this.result.scores.T, this.result.scores.F],
-              backgroundColor: ['#333', '#666'],
-              borderColor: ['#333', '#666'],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100
-              }
-            }
-          }
-        });
-      }
-      
-      // 初始化JP维度图表
-      if (this.$refs.chartJP) {
-        this.charts.jp = new Chart(this.$refs.chartJP, {
-          type: 'bar',
-          data: {
-            labels: ['判断(J)', '感知(P)'],
-            datasets: [{
-              label: '分数',
-              data: [this.result.scores.J, this.result.scores.P],
-              backgroundColor: ['#333', '#666'],
-              borderColor: ['#333', '#666'],
-              borderWidth: 1
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100
+              r: {
+                angleLines: {
+                  display: true
+                },
+                suggestedMin: 0,
+                suggestedMax: 100
               }
             }
           }
@@ -358,6 +458,27 @@ export default {
         const analysis = await analyzeMBTI(this.result, onChunk);
         this.aiAnalysis = analysis;
         this.showStreamingContent = false;
+        
+        // 保存AI分析结果到测评记录
+        const recordId = this.$route.query.recordId;
+        if (recordId) {
+          const record = AssessmentRecordModel.findById(recordId);
+          if (record) {
+            AssessmentRecordModel.update(recordId, { aiAnalysis: analysis });
+            console.log('AI analysis saved to record:', recordId);
+          } else {
+            // 如果没有recordId，尝试找到最新的测评记录
+            const user = getCurrentUser();
+            if (user) {
+              const records = AssessmentRecordModel.findByUserId(user.id);
+              if (records.length > 0) {
+                const latestRecord = records.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+                AssessmentRecordModel.update(latestRecord.id, { aiAnalysis: analysis });
+                console.log('AI analysis saved to latest record:', latestRecord.id);
+              }
+            }
+          }
+        }
       } catch (error) {
         this.aiError = error.message || 'AI分析失败，请稍后重试';
         this.showStreamingContent = false;
@@ -567,6 +688,69 @@ export default {
       };
       
       this.careerSuggestions = suggestions[typeCode] || ['暂无职业建议'];
+    },
+    async downloadAsImage() {
+      try {
+        const reportElement = this.$refs.a4Report;
+        if (!reportElement) {
+          alert('报告元素未找到');
+          return;
+        }
+        
+        const canvas = await html2canvas(reportElement, {
+          scale: 2, // 提高分辨率
+          useCORS: true,
+          logging: false
+        });
+        
+        const link = document.createElement('a');
+        link.download = `mbti-report-${this.result.typeCode}-${new Date().toISOString().slice(0, 10)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (error) {
+        console.error('下载图片失败:', error);
+        alert('下载图片失败，请重试');
+      }
+    },
+    async downloadAsPDF() {
+      try {
+        const reportElement = this.$refs.a4Report;
+        if (!reportElement) {
+          alert('报告元素未找到');
+          return;
+        }
+        
+        const canvas = await html2canvas(reportElement, {
+          scale: 2, // 提高分辨率
+          useCORS: true,
+          logging: false
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgWidth = 210;
+        const pageHeight = 295;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        
+        let position = 0;
+        
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+        
+        pdf.save(`mbti-report-${this.result.typeCode}-${new Date().toISOString().slice(0, 10)}.pdf`);
+      } catch (error) {
+        console.error('下载PDF失败:', error);
+        alert('下载PDF失败，请重试');
+      }
     }
   }
 };
@@ -621,61 +805,119 @@ h2 {
 .result-details h4 {
   margin-bottom: 1rem;
   color: #555;
+  text-align: center;
 }
 
-.dimensions {
+.type-header {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.dimension-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.dimension-label {
-  font-weight: bold;
-  color: #666;
-}
-
-.dimension-bar {
-  display: flex;
-  height: 20px;
-  background-color: #f0f0f0;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.bar {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 0.8rem;
-  font-weight: bold;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-.bar:nth-child(1) {
-  background-color: #333;
+.type-header .type-code {
+  font-size: 2rem;
+  margin-bottom: 0;
 }
 
-.bar:nth-child(2) {
-  background-color: #666;
-}
-
-.dimension-result {
-  font-weight: bold;
-  color: #333;
-  align-self: flex-end;
+.type-header .type-name {
+  font-size: 1.2rem;
+  color: #666;
 }
 
 .chart-container {
   width: 100%;
-  height: 200px;
-  margin-top: 1rem;
+  height: 400px;
+  margin: 0 auto;
+  max-width: 600px;
+}
+
+.scores-table {
+  margin-top: 3rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.scores-table h4 {
   margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+.scores-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.scores-table th,
+.scores-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.scores-table th {
+  background-color: #f9f9f9;
+  font-weight: 600;
+  color: #555;
+}
+
+.scores-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.score-bar {
+  display: flex;
+  height: 30px;
+  background-color: #f0f0f0;
+  border-radius: 15px;
+  overflow: hidden;
+  position: relative;
+}
+
+.score-fill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: width 0.5s ease;
+}
+
+.score-fill.e-score {
+  background-color: #4CAF50;
+}
+
+.score-fill.i-score {
+  background-color: #2196F3;
+}
+
+.score-fill.s-score {
+  background-color: #FF9800;
+}
+
+.score-fill.n-score {
+  background-color: #9C27B0;
+}
+
+.score-fill.t-score {
+  background-color: #F44336;
+}
+
+.score-fill.f-score {
+  background-color: #00BCD4;
+}
+
+.score-fill.j-score {
+  background-color: #795548;
+}
+
+.score-fill.p-score {
+  background-color: #607D8B;
 }
 
 .career-suggestions {
@@ -857,5 +1099,115 @@ h2 {
   margin-bottom: 1.5rem;
   color: #666;
   font-size: 1.1rem;
+}
+
+/* A4报告样式 */
+.report-download-section {
+  margin-top: 2rem;
+  border-top: 1px solid #ddd;
+  padding-top: 1.5rem;
+}
+
+.report-download-section h5 {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+.report-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.a4-report {
+  width: 210mm;
+  min-height: 297mm;
+  background-color: white;
+  margin: 0 auto;
+  padding: 20mm;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  font-family: 'SimSun', serif;
+  line-height: 1.5;
+}
+
+.a4-header {
+  text-align: center;
+  margin-bottom: 20mm;
+  padding-bottom: 10mm;
+  border-bottom: 1px solid #ddd;
+}
+
+.a4-header h2 {
+  font-size: 18pt;
+  color: #333;
+  margin-bottom: 10mm;
+}
+
+.report-info {
+  font-size: 10pt;
+  color: #666;
+  text-align: right;
+}
+
+.a4-content {
+  margin-bottom: 20mm;
+}
+
+.a4-section {
+  margin-bottom: 15mm;
+}
+
+.a4-section h3 {
+  font-size: 14pt;
+  color: #333;
+  margin-bottom: 5mm;
+  text-align: center;
+}
+
+.a4-section p {
+  font-size: 10pt;
+  color: #333;
+  margin-bottom: 5mm;
+  text-align: justify;
+}
+
+.a4-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10mm 0;
+  font-size: 9pt;
+}
+
+.a4-table th,
+.a4-table td {
+  border: 1px solid #ddd;
+  padding: 5px;
+  text-align: center;
+}
+
+.a4-table th {
+  background-color: #f9f9f9;
+  font-weight: bold;
+}
+
+.a4-list {
+  list-style-type: disc;
+  padding-left: 20mm;
+  font-size: 10pt;
+  color: #333;
+}
+
+.a4-list li {
+  margin-bottom: 3mm;
+  text-align: justify;
+}
+
+.a4-footer {
+  text-align: center;
+  font-size: 9pt;
+  color: #999;
+  padding-top: 10mm;
+  border-top: 1px solid #ddd;
 }
 </style>

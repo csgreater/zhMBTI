@@ -9,6 +9,7 @@ export const UserModel = {
     const newUser = {
       id: Date.now().toString(),
       ...user,
+      role: user.role || 'user',
       createdAt: new Date().toISOString()
     };
     users.push(newUser);
@@ -26,6 +27,11 @@ export const UserModel = {
   findById: (id) => {
     const users = getItem('users') || [];
     return users.find(user => user.id === id);
+  },
+  
+  // 获取所有用户
+  findAll: () => {
+    return getItem('users') || [];
   },
   
   // 更新用户信息
@@ -49,6 +55,7 @@ export const AssessmentRecordModel = {
     const newRecord = {
       id: Date.now().toString(),
       ...record,
+      aiAnalysis: record.aiAnalysis || null,
       createdAt: new Date().toISOString()
     };
     records.push(newRecord);
@@ -71,6 +78,18 @@ export const AssessmentRecordModel = {
   // 获取所有测评记录
   findAll: () => {
     return getItem('assessmentRecords') || [];
+  },
+  
+  // 更新测评记录
+  update: (id, updates) => {
+    const records = getItem('assessmentRecords') || [];
+    const index = records.findIndex(record => record.id === id);
+    if (index !== -1) {
+      records[index] = { ...records[index], ...updates };
+      setItem('assessmentRecords', records);
+      return records[index];
+    }
+    return null;
   }
 };
 

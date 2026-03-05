@@ -1,156 +1,47 @@
 // 测试题库管理
 import { QuestionBankModel } from './models';
+import questionsData from '../../MBTIquestion.json';
 
-// MBTI测试题目（模拟数据）
-export const mockQuestions = [
-  // 外向(E)/内向(I)维度
-  {
-    id: '1',
-    dimension: 'EI',
-    type: 'E',
-    question: '我喜欢参加大型社交活动，与很多人交流。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '2',
-    dimension: 'EI',
-    type: 'I',
-    question: '我更喜欢安静的环境，独自思考或与少数亲密朋友相处。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '3',
-    dimension: 'EI',
-    type: 'E',
-    question: '我倾向于通过与他人交流来解决问题。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '4',
-    dimension: 'EI',
-    type: 'I',
-    question: '我倾向于在做出决定前先独立思考。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '5',
-    dimension: 'EI',
-    type: 'E',
-    question: '我喜欢成为注意力的中心。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
+// 根据类型获取维度
+const getDimensionFromType = (type) => {
+  const dimensionMap = {
+    'E': 'EI', 'I': 'EI',
+    'S': 'SN', 'N': 'SN',
+    'T': 'TF', 'F': 'TF',
+    'J': 'JP', 'P': 'JP'
+  };
+  return dimensionMap[type] || 'EI';
+};
+
+// 转换MBTIquestion.json中的题目为系统需要的格式
+export const mockQuestions = questionsData.questions.map(q => {
+  let section = 1;
+  let sectionTitle = "一、哪一个答案最能贴切的描绘你一般的感受或行为？";
   
-  // 感觉(S)/直觉(N)维度
-  {
-    id: '6',
-    dimension: 'SN',
-    type: 'S',
-    question: '我更关注具体的事实和细节，而非抽象的概念。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '7',
-    dimension: 'SN',
-    type: 'N',
-    question: '我更关注未来的可能性和潜在的意义，而非当前的事实。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '8',
-    dimension: 'S',
-    type: 'S',
-    question: '我喜欢按照已有的方法和程序做事。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '9',
-    dimension: 'SN',
-    type: 'N',
-    question: '我喜欢尝试新的方法和创意。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '10',
-    dimension: 'SN',
-    type: 'S',
-    question: '我更相信通过感官获得的信息。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  
-  // 思考(T)/情感(F)维度
-  {
-    id: '11',
-    dimension: 'TF',
-    type: 'T',
-    question: '我做决定时更注重逻辑和客观分析。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '12',
-    dimension: 'TF',
-    type: 'F',
-    question: '我做决定时更注重个人价值观和他人感受。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '13',
-    dimension: 'TF',
-    type: 'T',
-    question: '我认为诚实和直接比和谐的关系更重要。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '14',
-    dimension: 'TF',
-    type: 'F',
-    question: '我认为和谐的关系比直接表达意见更重要。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '15',
-    dimension: 'TF',
-    type: 'T',
-    question: '我喜欢分析问题的各个方面，寻找最优解决方案。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  
-  // 判断(J)/感知(P)维度
-  {
-    id: '16',
-    dimension: 'JP',
-    type: 'J',
-    question: '我喜欢有计划、有条理的生活方式。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '17',
-    dimension: 'JP',
-    type: 'P',
-    question: '我喜欢灵活、随性的生活方式，适应变化。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '18',
-    dimension: 'JP',
-    type: 'J',
-    question: '我喜欢在截止日期前完成任务。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '19',
-    dimension: 'JP',
-    type: 'P',
-    question: '我喜欢在最后时刻完成任务，享受压力带来的动力。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
-  },
-  {
-    id: '20',
-    dimension: 'JP',
-    type: 'J',
-    question: '我喜欢做出决定并坚持执行。',
-    options: ['非常同意', '同意', '中立', '不同意', '非常不同意']
+  if (q.id >= 27 && q.id <= 58) {
+    section = 2;
+    sectionTitle = "二、在下列每一对词语中，哪一个词语更合你心意？请仔细想想这些词语的意义，而不要理会他们的字形或读音。";
+  } else if (q.id >= 59 && q.id <= 78) {
+    section = 3;
+    sectionTitle = "三、哪一个答案最能贴切地描绘你一般的感受或行为";
+  } else if (q.id >= 79 && q.id <= 93) {
+    section = 4;
+    sectionTitle = "四、在下列每一对词语中，哪一个词语更合你心意？";
   }
-];
+  
+  return {
+    id: q.id.toString(),
+    section: section,
+    sectionTitle: sectionTitle,
+    dimension: getDimensionFromType(q.type_a),
+    type: q.type_a,
+    question: q.question,
+    options: [q.option_a, q.option_b],
+    type_b: q.type_b
+  };
+});
+
+// MBTI测试题目（从JSON文件加载）
 
 // 初始化题库
 export const initQuestionBank = () => {
@@ -181,12 +72,13 @@ export const calculateResult = (answers) => {
     const question = mockQuestions.find(q => q.id === answer.questionId);
     if (question) {
       // 根据选项计算得分
-      const score = 5 - answer.optionIndex; // 非常同意=5，非常不同意=1
-      scores[question.type] += score;
-      
-      // 计算相反维度的得分
-      const oppositeType = getOppositeType(question.type);
-      scores[oppositeType] += (6 - score); // 相反维度的得分
+      if (answer.optionIndex === 0) {
+        // 选择了option_a，给type_a加分
+        scores[question.type] += 1;
+      } else if (answer.optionIndex === 1) {
+        // 选择了option_b，给type_b加分
+        scores[question.type_b] += 1;
+      }
     }
   });
   

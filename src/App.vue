@@ -7,6 +7,7 @@
           <li><router-link to="/">首页</router-link></li>
           <li><router-link to="/assessment">开始测评</router-link></li>
           <li><router-link to="/profile">个人中心</router-link></li>
+          <li v-if="isAdmin"><router-link to="/user-management">用户管理</router-link></li>
           <li v-if="!currentUser"><router-link to="/login">登录</router-link></li>
           <li v-if="!currentUser"><router-link to="/register">注册</router-link></li>
           <li v-else class="user-info">
@@ -22,7 +23,7 @@
 </template>
 
 <script>
-import { getCurrentUser } from './services/userService';
+import { getCurrentUser, isCurrentUserAdmin } from './services/userService';
 
 export default {
   name: 'App',
@@ -30,6 +31,11 @@ export default {
     return {
       currentUser: null
     };
+  },
+  computed: {
+    isAdmin() {
+      return isCurrentUserAdmin();
+    }
   },
   mounted() {
     this.updateUserStatus();

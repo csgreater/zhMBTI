@@ -12,23 +12,32 @@
         <span class="value">{{ user.name }}</span>
       </div>
       <div class="info-item">
+        <span class="label">角色：</span>
+        <span class="value">{{ user.role === 'admin' ? '管理员' : '普通用户' }}</span>
+      </div>
+      <div class="info-item">
         <span class="label">注册时间：</span>
         <span class="value">{{ formatDate(user.createdAt) }}</span>
       </div>
       <button class="logout-button" @click="handleLogout">退出登录</button>
-      <button class="export-button" @click="handleExportCSV">导出测评记录</button>
+      <button v-if="isAdmin" class="export-button" @click="handleExportCSV">导出测评记录</button>
     </div>
     
     <div v-if="user" class="assessment-records">
-      <h3>测评记录</h3>
+      <h3>{{ isAdmin ? '所有用户测评记录' : '我的测评记录' }}</h3>
       <div v-if="records.length === 0" class="no-records">
-        暂无测评记录
+        {{ isAdmin ? '暂无测评记录' : '您暂无测评记录' }}
       </div>
       <div v-else class="records-list">
-        <div v-for="record in records" :key="record.id" class="record-item">
+        <div v-for="record in records" :key="record.id" class="record-item" @click="viewRecord(record.id)">
           <div class="record-header">
             <span class="record-date">{{ formatDate(record.createdAt) }}</span>
             <span class="record-type">{{ record.typeCode }}</span>
+            <span class="view-button">查看详情</span>
+          </div>
+          <div v-if="isAdmin" class="record-user">
+            <span class="user-label">用户：</span>
+            <span class="user-value">{{ getUsernameById(record.userId) }}</span>
           </div>
           <div class="record-description">{{ record.description }}</div>
         </div>
@@ -43,7 +52,7 @@
 </template>
 
 <script>
-import { getCurrentUser, logoutUser } from '../services/userService';
+import { getCurrentUser, logoutUser, isCurrentUserAdmin, getAllUsers } from '../services/userService';
 import { AssessmentRecordModel } from '../services/models';
 import { exportToCSV, exportToJSON } from '../services/exportService';
 
@@ -51,8 +60,14 @@ export default {
   data() {
     return {
       user: null,
-      records: []
+      records: [],
+      allUsers: []
     };
+  },
+  computed: {
+    isAdmin() {
+      return isCurrentUserAdmin();
+    }
   },
   mounted() {
     this.loadUserInfo();
@@ -62,10 +77,24 @@ export default {
       this.user = getCurrentUser();
       if (this.user) {
         this.loadAssessmentRecords();
+        if (this.isAdmin) {
+          this.loadAllUsers();
+        }
       }
     },
     loadAssessmentRecords() {
-      this.records = AssessmentRecordModel.findByUserId(this.user.id);
+      if (this.isAdmin) {
+        this.records = AssessmentRecordModel.findAll();
+      } else {
+        this.records = AssessmentRecordModel.findByUserId(this.user.id);
+      }
+    },
+    loadAllUsers() {
+      this.allUsers = getAllUsers();
+    },
+    getUsernameById(userId) {
+      const user = this.allUsers.find(u => u.id === userId);
+      return user ? user.username : '未知用户';
     },
     handleLogout() {
       logoutUser();
@@ -83,12 +112,34 @@ export default {
       } catch (error) {
         alert(error.message);
       }
+    },
+    viewRecord(recordId) {
+      // 导航到结果页面，并传递记录ID
+      this.$router.push({ 
+        path: '/result', 
+        query: { recordId } 
+      });
     }
   }
 };
 </script>
 
 <style scoped>
+/* 现有样式保持不变 */
+.record-user {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.user-label {
+  font-weight: bold;
+}
+
+.user-value {
+  color: #333;
+}
+
 .profile-container {
   max-width: 800px;
   margin: 0 auto;
@@ -203,6 +254,30 @@ h3 {
 .record-description {
   color: #555;
   line-height: 1.4;
+}
+
+.record-item {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.record-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.view-button {
+  background-color: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.view-button:hover {
+  background-color: #0069d9;
 }
 
 .login-prompt {

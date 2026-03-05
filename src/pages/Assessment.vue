@@ -18,6 +18,10 @@
         第 {{ currentQuestionIndex + 1 }} 题，共 {{ questions.length }} 题
       </div>
       
+      <div v-if="currentQuestion" class="section-info">
+        <h4>{{ currentSectionTitle }}</h4>
+      </div>
+      
       <div v-if="currentQuestion" class="question-card">
         <h3>{{ currentQuestion.question }}</h3>
         <div class="options">
@@ -74,6 +78,9 @@ export default {
   computed: {
     currentQuestion() {
       return this.questions[this.currentQuestionIndex];
+    },
+    currentSectionTitle() {
+      return this.currentQuestion ? this.currentQuestion.sectionTitle : '';
     },
     progress() {
       return ((this.currentQuestionIndex + 1) / this.questions.length) * 100;
@@ -204,9 +211,24 @@ h2 {
 
 .progress-text {
   text-align: right;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   color: #666;
   font-size: 0.9rem;
+}
+
+.section-info {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  border-left: 4px solid #333;
+}
+
+.section-info h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
 .question-card {

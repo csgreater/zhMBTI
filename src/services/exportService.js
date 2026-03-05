@@ -1,9 +1,20 @@
 // 数据导出服务
 import { AssessmentRecordModel } from './models';
+import { isCurrentUserAdmin, getCurrentUser } from './userService';
+
+// 检查是否有权限导出
+const checkExportPermission = () => {
+  if (!isCurrentUserAdmin()) {
+    throw new Error('无权限导出数据');
+  }
+};
 
 // 导出测评记录为CSV格式
 export const exportToCSV = () => {
   try {
+    // 检查权限
+    checkExportPermission();
+    
     const records = AssessmentRecordModel.findAll();
     
     // CSV表头
@@ -44,16 +55,23 @@ export const exportToCSV = () => {
     document.body.removeChild(link);
   } catch (error) {
     console.error('导出CSV失败:', error);
-    throw new Error('导出失败，请重试');
+    throw error;
   }
 };
 
 // 导出单个测评记录为JSON格式
 export const exportToJSON = (recordId) => {
   try {
+    const currentUser = getCurrentUser();
     const record = AssessmentRecordModel.findById(recordId);
+    
     if (!record) {
       throw new Error('测评记录不存在');
+    }
+    
+    // 检查权限：管理员可以导出任何记录，普通用户只能导出自己的记录
+    if (!isCurrentUserAdmin() && record.userId !== currentUser.id) {
+      throw new Error('无权限导出此记录');
     }
     
     const jsonContent = JSON.stringify(record, null, 2);

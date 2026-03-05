@@ -60,6 +60,12 @@ export const loginUser = (username, password) => {
       throw new Error('密码错误');
     }
     
+    // 确保用户有角色
+    if (!user.role) {
+      UserModel.update(user.id, { role: 'user' });
+      user.role = 'user';
+    }
+    
     // 保存登录状态（不保存密码）
     const userWithoutPassword = {
       ...user,
@@ -92,4 +98,40 @@ export const logoutUser = () => {
 // 更新用户信息
 export const updateUser = (userId, updates) => {
   return UserModel.update(userId, updates);
+};
+
+// 获取所有用户
+export const getAllUsers = () => {
+  try {
+    const users = UserModel.findAll();
+    // 移除密码信息
+    return users.map(user => ({
+      ...user,
+      password: undefined
+    }));
+  } catch (error) {
+    console.error('获取用户列表失败:', error);
+    throw error;
+  }
+};
+
+// 更新用户角色
+export const updateUserRole = (userId, role) => {
+  try {
+    return UserModel.update(userId, { role });
+  } catch (error) {
+    console.error('更新用户角色失败:', error);
+    throw error;
+  }
+};
+
+// 检查用户是否为管理员
+export const isAdmin = (user) => {
+  return user && user.role === 'admin';
+};
+
+// 检查当前用户是否为管理员
+export const isCurrentUserAdmin = () => {
+  const user = getCurrentUser();
+  return isAdmin(user);
 };
